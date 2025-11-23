@@ -19,9 +19,9 @@ public class Puck : MonoBehaviour
     private float maxAddedVelocity = 3f;
 
     private float maxMaxVelocity = 30f;
-    private float currentMaxVelocity = 12.5f;
+    private float currentMaxVelocity = 12.8f;
     private float minMaxVelocity = 9f;
-    private float defaultMaxVelocity = 12.5f;
+    private float defaultMaxVelocity = 12.8f;
 
     private Vector3 currentVelocity = new Vector3();
 

@@ -16,20 +16,23 @@ namespace Players
 
         protected float speedModifier = 100f;
 
-        protected static float defaultComputerDifficulty = 7.5f;
+        protected static float defaultComputerDifficulty = 7f;
         protected static float minComputerDifficulty = 5f;
         protected static float maxComputerDifficulty = 12f;
 
         protected float spaceBehindPuckToStopMovingBack = 0f;
 
-        public BasePlayerComputer(PlayerSide playerSide) : base(playerSide) {}
+        protected float computerSlowDownModifierReturnToDefaultPosition = 0.1f;
+        protected float computerSlowDownMoveBackToCatchPuck = 0.12f;
+
+        public BasePlayerComputer(PlayerSide playerSide) : base(playerSide) { }
 
         protected abstract bool CheckIfPuckOutsideOfYourField(Puck puck);
         protected abstract bool CheckIfPuckIsBehindYouAndYouStillHaveSpaceToMoveBack(Puck puck, Striker striker, PlayerMovementConstraints playerMovementConstraints);
         protected abstract bool CheckIfCanMoveBackToDefaultPosition(Vector3 defaultPosition, Striker striker, PlayerMovementConstraints playerMovementConstraints);
         protected abstract bool CheckIfPuckIsOnYourField(Puck puck);
 
-        public override void RunUpdate(GameplayController gameplayController, Striker striker, PlayerMovementConstraints playerMovementConstraints) {}
+        public override void RunUpdate(GameplayController gameplayController, Striker striker, PlayerMovementConstraints playerMovementConstraints) { }
         public override void RunFixedUpdate(GameplayController gameplayController, Striker striker, PlayerMovementConstraints playerMovementConstraints)
         {
             PerformMovement(gameplayController, striker, playerMovementConstraints);
@@ -44,13 +47,13 @@ namespace Players
         {
             if (CheckIfPuckOutsideOfYourField(gameplayController.Puck) && CheckIfCanMoveBackToDefaultPosition(DefaultStrikerPosition, striker, playerMovementConstraints))
             {
-                MoveToDefaultPositionIfPuckIsOnTheOtherSideOfTable(gameplayController.Puck, striker, DefaultStrikerPosition);
+                MoveToDefaultPositionIfPuckIsOnTheOtherSideOfTable(gameplayController.Puck, striker, DefaultStrikerPosition, computerSlowDownModifierReturnToDefaultPosition);
             }
             else if (CheckIfPuckIsBehindYouAndYouStillHaveSpaceToMoveBack(gameplayController.Puck, striker, playerMovementConstraints))
             {
-                MoveBackIfPuckIsBehindYou(gameplayController.Puck, striker, playerMovementConstraints);
+                MoveBackIfPuckIsBehindYou(gameplayController.Puck, striker, playerMovementConstraints, computerSlowDownMoveBackToCatchPuck);
             }
-            else if(CheckIfPuckIsOnYourField(gameplayController.Puck))
+            else if (CheckIfPuckIsOnYourField(gameplayController.Puck))
             {
                 StrikePuckIfInFrontOfYou(gameplayController.Puck, striker);
             }
@@ -64,20 +67,26 @@ namespace Players
             MoveTowardsPosition(striker, striker.transform.position, puck.transform.position);
         }
 
-        protected abstract void MoveBackIfPuckIsBehindYou(Puck puck, Striker striker, PlayerMovementConstraints playerMovementConstraints);
+        protected abstract void MoveBackIfPuckIsBehindYou(Puck puck, Striker striker, PlayerMovementConstraints playerMovementConstraints, float slowDownModifier);
 
         protected abstract void RemoveOppositeMovementVectorsBeforeMovingBack(Striker striker);
 
-        protected void MoveToDefaultPositionIfPuckIsOnTheOtherSideOfTable(Puck puck, Striker striker, Vector3 defaultStrikerPosition)
+        protected void MoveToDefaultPositionIfPuckIsOnTheOtherSideOfTable(Puck puck, Striker striker, Vector3 defaultStrikerPosition, float slowDownModifier)
         {
             RemoveOppositeMovementVectorsBeforeMovingBack(striker);
-            MoveTowardsPosition(striker, striker.transform.position, defaultStrikerPosition);
+            MoveTowardsPosition(striker, striker.transform.position, defaultStrikerPosition, slowDownModifier);
         }
 
         protected void MoveTowardsPosition(Striker striker, Vector3 startPosition, Vector3 targetPosition)
         {
-            striker.PerformMovementPlayerComputer((targetPosition - startPosition).normalized * speedModifier, 
+            striker.PerformMovementPlayerComputer((targetPosition - startPosition).normalized * speedModifier,
                 GameSettings.Instance.TryLoadSetting(GameSettings.SettingsOptions.ComputerDifficulty, defaultComputerDifficulty));
+        }
+
+        protected void MoveTowardsPosition(Striker striker, Vector3 startPosition, Vector3 targetPosition, float slowDownModifier)
+        {
+            striker.PerformMovementPlayerComputer((targetPosition - startPosition).normalized * speedModifier,
+                GameSettings.Instance.TryLoadSetting(GameSettings.SettingsOptions.ComputerDifficulty, defaultComputerDifficulty) * slowDownModifier);
         }
     }
 }

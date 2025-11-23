@@ -38,10 +38,10 @@ namespace Players
             if (striker.Rigidbody.linearVelocity.z < 0) striker.SetVelocity(new Vector3(striker.Rigidbody.linearVelocity.x, 0f, 0f));
         }
 
-        protected override void MoveBackIfPuckIsBehindYou(Puck puck, Striker striker, PlayerMovementConstraints playerMovementConstraints)
+        protected override void MoveBackIfPuckIsBehindYou(Puck puck, Striker striker, PlayerMovementConstraints playerMovementConstraints, float slowDownModifier)
         {
             RemoveOppositeMovementVectorsBeforeMovingBack(striker);
-            MoveTowardsPosition(striker, striker.transform.position, new Vector3(striker.transform.position.x, striker.transform.position.y, playerMovementConstraints.ZAxisMax));
+            MoveTowardsPosition(striker, striker.transform.position, new Vector3(striker.transform.position.x, striker.transform.position.y, playerMovementConstraints.ZAxisMax), slowDownModifier);
         }
     }
 }
